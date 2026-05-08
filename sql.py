@@ -65,7 +65,8 @@ def GetAllEmployees():
             employee[11],
             employee[12],
             employee[13],
-            employee[14])
+            employee[14],
+            employee[15])
         employeeList.append(emp)
 
     return employeeList
@@ -85,10 +86,10 @@ def AddEmployee(emp):
     cursor.execute("""
     INSERT INTO employees (
     id, fname, lname, status, department, title,
-    DoB, gender, payType, email, address, zip,
+    DoB, gender, payType, payRate, email, address, zip,
     dependents, admin, password
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         newId,
         emp.fname,
@@ -99,6 +100,7 @@ def AddEmployee(emp):
         emp.dob,
         emp.gender,
         emp.payType,
+        emp.payRate,
         emp.email,
         emp.address,
         emp.zipCode,

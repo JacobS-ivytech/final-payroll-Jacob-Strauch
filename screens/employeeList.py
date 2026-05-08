@@ -25,6 +25,7 @@ class EmployeeListAll(tk.Frame):
                     "Date of Birth",
                     "Gender",
                     "Pay Type",
+                    "Pay Rate",
                     "Email",
                     "Address",
                     "Zip Code",
@@ -37,7 +38,12 @@ class EmployeeListAll(tk.Frame):
         #format each column
         for item in columns:
             self.tree.heading(item, text=item)
-            self.tree.column(item, width=100)
+            if item == "Email":
+                self.tree.column(item, width = 120)
+            elif item == "ID" or item == "Num. of Dependents" or item == "Admin Status":
+                self.tree.column(item, width=40)
+            else:
+                self.tree.column(item, width=40)
 
         self.refreshTree()
 
@@ -62,6 +68,7 @@ class EmployeeListAll(tk.Frame):
                 emp.dob,
                 emp.gender,
                 emp.payType,
+                emp.payRate,
                 emp.email,
                 emp.address,
                 emp.zipCode,

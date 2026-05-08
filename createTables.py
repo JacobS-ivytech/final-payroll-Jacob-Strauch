@@ -16,6 +16,7 @@ command1 = """CREATE TABLE IF NOT EXISTS employees (
             DoB TEXT NOT NULL,
             gender TEXT NOT NULL,
             payType TEXT NOT NULL,
+            payRate TEXT NOT NULL,
             email TEXT NOT NULL,
             address TEXT NOT NULL,
             zip TEXT NOT NULL,
@@ -31,6 +32,7 @@ command3 = """CREATE TABLE IF NOT EXISTS workhours (
             employee_id INTEGER NOT NULL,
             work_date TEXT NOT NULL,
             hours REAL NOT NULL CHECK(hours >= 0),
+            pto REAL NOT NULL,
             locked INTEGER NOT NULL,
             PRIMARY KEY (employee_id, work_date),
             FOREIGN KEY (employee_id) REFERENCES employees(id))"""

@@ -13,6 +13,7 @@ class Employee:
     dob: str
     gender: str
     payType: str
+    payRate: str
     email: str
     address: str
     zipCode: str
