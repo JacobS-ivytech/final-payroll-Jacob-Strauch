@@ -91,40 +91,47 @@ class NewEmployee(tk.Frame):
         self.payType_entry.grid(row=7, column=1, padx=10, pady=10)
         self.entries["Pay Type"] = self.payType_entry
 
+        #payRate entry
+        tk.Label(self.form, text="Pay Rate").grid(
+            row=8, column=0, sticky="w")
+        self.payRate_entry = tk.Entry(self.form)
+        self.payRate_entry.grid(row=8, column=1, padx=10, pady=10)
+        self.entries["Pay Rate"] = self.payRate_entry
+
         #Address entry
         tk.Label(self.form, text="Address").grid(
-            row=8, column=0, sticky="w")
+            row=9, column=0, sticky="w")
         self.address_entry = tk.Entry(self.form)
-        self.address_entry.grid(row=8, column=1, padx=10, pady=10)
+        self.address_entry.grid(row=9, column=1, padx=10, pady=10)
         self.entries["Address"] = self.address_entry
 
         #Zip entry
         tk.Label(self.form, text="Zip Code").grid(
-            row=9, column=0, sticky="w")
+            row=10, column=0, sticky="w")
         self.zip_entry = tk.Entry(self.form)
-        self.zip_entry.grid(row=9, column=1, padx=10, pady=10)
+        self.zip_entry.grid(row=10, column=1, padx=10, pady=10)
         self.entries["Zip Code"] = self.zip_entry
 
         #dependents entry
         tk.Label(self.form, text="Number of Dependents").grid(
-            row=10, column=0, sticky="w")
+            row=11, column=0, sticky="w")
         self.dependents_entry = tk.Entry(self.form)
-        self.dependents_entry.grid(row=10, column=1, padx=10, pady=10)
+        self.dependents_entry.grid(row=11, column=1, padx=10, pady=10)
         self.entries["Dependents"] = self.dependents_entry
 
         #admin entry
         empTypes = ["Employee", "Admin"]
         tk.Label(self.form, text="Authorization Type").grid(
-            row=11, column=0, sticky="w")
+            row=12, column=0, sticky="w")
         self.admin_entry=ttk.Combobox(self.form, 
                                       textvariable=tk.StringVar(value = "Employee"), 
                                       values=empTypes,
                                       state="readonly")
-        self.admin_entry.grid(row=11, column=1, padx=10, pady=10)
+        self.admin_entry.grid(row=12, column=1, padx=10, pady=10)
         self.entries["Admin"] = self.admin_entry
 
         save_btn = ttk.Button(self.form, text="Log Employee", command=lambda: self.GatherEmployee())
-        save_btn.grid(row=12, column=0, columnspan=2)
+        save_btn.grid(row=13, column=0, columnspan=2)
 
     def GatherEmployee(self):
 
@@ -136,14 +143,27 @@ class NewEmployee(tk.Frame):
         
         zip_code = self.entries["Zip Code"].get().strip()
 
+        #check for format of zip entry
         if not zip_code.isdigit() or len(zip_code) != 5:
             messagebox.showerror(title="Error", message="Zip Code must be exactly 5 digits")
             return      
         
         depen = self.entries["Dependents"].get().strip()
 
+        #check format of dependents entry
         if not depen.isdigit() or int(depen) < 0 or int(depen) > 9:
-            messagebox.showerror(title="Error", message="Must enter single digit number for Dependents")
+            messagebox.showerror(title="Error", message="Must enter single positive digit number for Dependents")
+            return
+
+        #check format of pay rate entry
+        pay = self.entries["Pay Rate"].get().strip()
+        try:
+            pay_float = float(pay)
+            if len(pay.split(".")) != 2 or len(pay.split(".")[1]) != 2:
+                raise ValueError
+
+        except ValueError:
+            messagebox.showerror(title = "Error", message="Pay rate must be formatted like 15.75")
             return
 
         #prep names for email construction
@@ -170,6 +190,7 @@ class NewEmployee(tk.Frame):
             dob = DoB,
             gender = self.entries["Gender"].get(),
             payType = self.entries["Pay Type"].get(),
+            payRate= pay,
             email =  f"{first}{last}@abc.com",
             address = self.entries["Address"].get(),
             zipCode = self.entries["Zip Code"].get(),
@@ -178,7 +199,22 @@ class NewEmployee(tk.Frame):
             password = hashedPassword
         )
 
-        AddEmployee(newEmp)
+        try:
+            #sql that adds employee to db
+            AddEmployee(newEmp)
 
-        
-        
+            #confirmation notice
+            messagebox.showinfo(title="Success", message="New employee successfully added!")
+
+            #clear all boxes
+            for value in self.entries.values():
+                if isinstance(value, tk.Entry):
+                    value.delete(0, tk.END)
+                elif isinstance(value, ttk.Combobox):
+                    value.set("")
+                elif isinstance(value, DateEntry):
+                    value.set_date(date.today())
+            
+            self.controller.show_frame("EmployeeListAll")
+        except Exception as e:
+            messagebox.showerror(title="Database Error", message=str(e))

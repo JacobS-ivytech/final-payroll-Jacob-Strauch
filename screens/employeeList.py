@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from sql import GetAllEmployees
+from screens.newEmployee import NewEmployee
 
 
 class EmployeeListAll(tk.Frame):
@@ -10,7 +11,22 @@ class EmployeeListAll(tk.Frame):
         super().__init__( parent)
         self.controller = controller
 
-        tk.Label(self, text="Employee List All", font=("Arial", 20)).pack(pady=15)
+        #frame for top bar
+        topBarFrame = tk.Frame(self)
+        topBarFrame.pack(fill="x")
+
+        topBarFrame.grid_columnconfigure(0, weight=1)
+        topBarFrame.grid_columnconfigure(1, weight=1)
+        topBarFrame.grid_columnconfigure(2, weight=1)
+
+        tk.Label(topBarFrame, text="Employee List All", font=("Arial", 20)).grid(column=1, row=0)
+
+        #button to add new employee screen
+        self.test_btn = ttk.Button(
+            topBarFrame, 
+            text="Add Employee", 
+            command=lambda: self.controller.show_frame(NewEmployee))
+        self.test_btn.grid(column=2, row=0, padx=20, pady=20, sticky="e")
 
         listFrame = tk.Frame(self)
         listFrame.pack(fill=tk.BOTH, expand=True)

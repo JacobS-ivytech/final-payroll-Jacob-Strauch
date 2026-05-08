@@ -17,10 +17,17 @@ class PayrollApp(tk.Tk):
         tk.Tk.__init__(self)
         self.title("ABC Company")
 
+        #store current user identifier
+        self.currentUserId = None
+
         #basic setup of window
         self.geometry("1800x900")
         self.resizable(0, 0)
         self.config(bg=bg_color)
+
+        #stylize buttons
+        style = ttk.Style()
+        style.configure("TButton", font=("Arial", 12))
 
         #header setup
         self.header = tk.Frame(self, bg= primary_color)
@@ -49,12 +56,11 @@ class PayrollApp(tk.Tk):
         self.payroll_btn.pack(fill="x", padx=20, pady=20)
 
         #button to payroll screen
-        self.test_btn = ttk.Button(
+        self.detail_btn = ttk.Button(
             self.menu, 
-            text="new emp", 
-            command=lambda: self.show_frame(NewEmployee))
-        self.test_btn.pack(fill="x", padx=20, pady=20)
-
+            text="Detail test", 
+            command=lambda: self.show_frame(EmployeeDetail))
+        self.detail_btn.pack(fill="x", padx=20, pady=20)
 
         #main frame setup
         main_frame = tk.Frame(self)

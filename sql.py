@@ -1,42 +1,23 @@
 import sqlite3
 import hashlib
 from Employee import Employee
+import datetime as dt
 
 #get passord for user from database
-def GetPassword(email):
+def GetLoginData(email):
     connection = sqlite3.connect('ABC.db')
     cursor = connection.cursor()
 
-    cursor.execute("SELECT password FROM employees WHERE email = ?",(email,))
+    cursor.execute("SELECT password, id, admin FROM employees WHERE email = ?",(email,))
     result = cursor.fetchone()
 
     connection.close()
 
     if result:
-        return result[0]
+        return result
     else:
         return None
-    
-
-#get admin status for given account
-def GetAdminStatus(email):
-    connection = sqlite3.connect('ABC.db')
-    cursor = connection.cursor()
-
-    cursor.execute("SELECT admin FROM employees WHERE email = ?",(email,))
-    result = cursor.fetchone()
-
-    connection.close()
-
-    if result:
-        return result[0]
-    else:
-        return None
-    
-
-def GetEmployee(email):
-    pass
-
+        
 
 def GetAllEmployees():
     connection = sqlite3.connect('ABC.db')
@@ -70,9 +51,6 @@ def GetAllEmployees():
         employeeList.append(emp)
 
     return employeeList
-
-    
-
 
 def AddEmployee(emp):
     connection = sqlite3.connect('ABC.db')
@@ -111,3 +89,102 @@ def AddEmployee(emp):
     connection.commit()
     connection.close()
     
+
+def GetAllEmployeeIdPayType():
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    #get all employee ids
+    cursor.execute("SELECT id, payType FROM employees")
+    empIdPayType = cursor.fetchall()
+
+    connection.close()
+    return empIdPayType
+
+
+def PrefillWeekHours(firstDay):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    #get all employee ids
+    empIdPayType = GetAllEmployeeIdPayType()
+
+    #loop through all employees to fill
+    for id, payType in empIdPayType:
+        week=[]
+        current = firstDay
+        #check pay type to determine prefill hours
+        if payType == "Salary":
+            hour = 8
+        else:
+            hour = 0
+
+        for i in range(7):
+            day = (id, current, hour, 0, 0)
+            week.append(day)
+            current = (dt.datetime.strptime(current, "%Y-%m-%d") + dt.timedelta(days=1)).strftime("%Y-%m-%d")
+
+        cursor.executemany("INSERT OR IGNORE INTO workhours VALUES (?, ?, ?, ?, ?)", week)
+    
+    connection.commit()
+    connection.close()
+
+
+def GetHours(empId, endDate):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    #find start of week
+    startDate = (dt.datetime.strptime(endDate, "%Y-%m-%d") - dt.timedelta(days=6)).strftime("%Y-%m-%d")
+
+    #query db for weeks hours
+    cursor.execute("SELECT * FROM workhours WHERE employee_id = ? AND work_date BETWEEN ? AND ?",
+                   (empId, startDate, endDate))
+    
+    result = cursor.fetchall()
+    connection.close()
+    return result
+
+
+def GetSalary(empId):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT payType FROM employees WHERE id = ?", (empId,))
+
+    result = cursor.fetchone
+    connection.close()
+    return result
+
+def GetLastWeekDay():
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("""SELECT work_date 
+                   FROM workhours 
+                   ORDER BY work_date DESC
+                   LIMIT 1""")
+    
+    latestDate = cursor.fetchone()
+    connection.close()
+    return latestDate
+
+def GetPayInfo(empId):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT payRate, dependents FROM employees WHERE id = ?", (empId,))
+
+    result = cursor.fetchone()
+    connection.close()
+    return result
+
+def GetDeductions():
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM deductions")
+
+    result = cursor.fetchall()
+    connection.close()
+    return result
