@@ -31,6 +31,7 @@ command3 = """CREATE TABLE IF NOT EXISTS workhours (
             employee_id INTEGER NOT NULL,
             work_date TEXT NOT NULL,
             hours REAL NOT NULL CHECK(hours >= 0),
+            locked INTEGER NOT NULL,
             PRIMARY KEY (employee_id, work_date),
             FOREIGN KEY (employee_id) REFERENCES employees(id))"""
 

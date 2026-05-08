@@ -2,12 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import hashlib
-from sql import GetPassword
+from sql import GetPassword, GetAdminStatus
+from screens.employeeDetail import EmployeeDetail
+from screens.employeeList import EmployeeListAll
 
 class LoginPage(tk.Frame):
 
     def __init__(self, parent, controller):
         super().__init__( parent)
+        self.controller = controller
 
         #title
         tk.Label(self, text="Employee Login", font=("Arial", 16)).pack(pady=15)
@@ -40,18 +43,23 @@ class LoginPage(tk.Frame):
         self.email_entry.focus()
 
     def login(self):
-        email = self.email_entry.get()
+        email = self.email_entry.get().lower()
         password = self.password_entry.get()
 
         #gather hashed passwords
         hashedPassword = hashlib.sha256(password.encode()).hexdigest()
         storedPassword = GetPassword(email)
-        print(f'The typed password is : {password}')
-        print(f'The hashed password is : {hashedPassword}')
+        adminStatus = GetAdminStatus(email)
+        print(adminStatus)
         
-
+        #checks if passwords match
         if hashedPassword == storedPassword:
             messagebox.showinfo(title='Login Success', message='You Successfully logged in')
+
+            #check for admin status and redirect to appropriate page
+            if adminStatus == 1:
+                self.controller.show_frame(EmployeeListAll)
+            else:
+                self.controller.show_frame(EmployeeDetail)
         else:
             messagebox.showerror(title='Error', message='Wrong email or password')
-
