@@ -1,5 +1,6 @@
 # final-payroll-Jacob-Strauch
 
+
 **Description of App**
 
 This is an application to manage the employees and payroll for ABC company.
@@ -9,6 +10,7 @@ This application uses a sqlite3 database to store employee data that is then use
 Employees can enter their hours worked for the week as well as PTO hours. The program then calculates their gross pay, each itemized deduction, and their net pay based of personalized information for each person.
 
 An administrator has additonal access to tools to add, edit, and remove employees from the system. They can also adjust any employees hours. In their payroll window they can lock the employee's hours in their current state and create a report from those hours for payroll to be completed.
+
 
 **Application Structure**
 
