@@ -1,7 +1,7 @@
 # final-payroll-Jacob-Strauch
 
 
-**Description of App**
+##**Description of App**
 
 This is an application to manage the employees and payroll for ABC company.
 
@@ -12,7 +12,7 @@ Employees can enter their hours worked for the week as well as PTO hours. The pr
 An administrator has additonal access to tools to add, edit, and remove employees from the system. They can also adjust any employees hours. In their payroll window they can lock the employee's hours in their current state and create a report from those hours for payroll to be completed.
 
 
-**Application Structure**
+##**Application Structure**
 
 The main app is titled "PayrollApp.py" and can be located in the root of this repository. In order to run the application just run this file and the window will open to the login screen.
 
