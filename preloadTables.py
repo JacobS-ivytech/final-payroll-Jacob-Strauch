@@ -13,10 +13,12 @@ cursor = connection.cursor()
 #                '2000-01-01', 'Male', 'Hourly', '20.00', 'adamsmith@abc.com', '123 w. main st.',
 #                '47305', 1, 0, ?)""", (passwordhashed,))
 
-#cursor.execute("""INSERT INTO deductions VALUES
-#               ('state tax', 315),('federal tax', 765),
-#               ('social security tax', 620),('medicare', 145)
-#""")
+# cursor.execute("""INSERT OR IGNORE INTO deductions VALUES
+#             ('State Tax', 315),('Federal Tax Employee', 765),
+#             ('Social Security Tax Employee', 620),('Medicare Employee', 145),
+#             ('Federal Tax Employer', 765), ('Social Security Tax Employer', 620),
+#             ('Medicare Employer', 145)
+# """)
 
 
 # week=[]

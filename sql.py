@@ -102,9 +102,12 @@ def GetAllEmployeeIdPayType():
     return empIdPayType
 
 
-def PrefillWeekHours(firstDay):
+def PrefillWeekHours():
     connection = sqlite3.connect('ABC.db')
     cursor = connection.cursor()
+
+    lastDay = GetLastWeekDay()[0]
+    firstDayNewWeek = (dt.datetime.strptime(lastDay, "%Y-%m-%d") + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
     #get all employee ids
     empIdPayType = GetAllEmployeeIdPayType()
@@ -112,7 +115,7 @@ def PrefillWeekHours(firstDay):
     #loop through all employees to fill
     for id, payType in empIdPayType:
         week=[]
-        current = firstDay
+        current = firstDayNewWeek
         #check pay type to determine prefill hours
         if payType == "Salary":
             hour = 8
@@ -169,11 +172,21 @@ def GetLastWeekDay():
     connection.close()
     return latestDate
 
-def GetPayInfo(empId):
+def GetDependents(empId):
     connection = sqlite3.connect('ABC.db')
     cursor = connection.cursor()
 
-    cursor.execute("SELECT payRate, dependents FROM employees WHERE id = ?", (empId,))
+    cursor.execute("SELECT dependents FROM employees WHERE id = ?", (empId,))
+
+    result = cursor.fetchone()
+    connection.close()
+    return result
+
+def GetPayRate(empId):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT payRate FROM employees WHERE id = ?", (empId,))
 
     result = cursor.fetchone()
     connection.close()
@@ -188,3 +201,20 @@ def GetDeductions():
     result = cursor.fetchall()
     connection.close()
     return result
+
+def UpdateHours(hoursPackage):
+
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.executemany("""
+        UPDATE workhours
+        SET hours = ?, pto = ?
+        WHERE employee_id = ?
+        AND work_date = ?""",
+        [(hours, pto, empId, day)
+         for empId, day, hours, pto in hoursPackage
+    ])
+
+    connection.commit()
+    connection.close()

@@ -3,7 +3,6 @@ from tkinter import ttk
 from screens.login import LoginPage
 from screens.employeeDetail import EmployeeDetail
 from screens.employeeList import EmployeeListAll
-from screens.payroll import Payroll
 from screens.newEmployee import NewEmployee
 
 #Global Variables
@@ -17,8 +16,9 @@ class PayrollApp(tk.Tk):
         tk.Tk.__init__(self)
         self.title("ABC Company")
 
-        #store current user identifier
+        #store current user and admin status identifier
         self.currentUserId = None
+        self.admin = 0
 
         #basic setup of window
         self.geometry("1800x900")
@@ -46,21 +46,18 @@ class PayrollApp(tk.Tk):
             self.menu, 
             text="Employee List", 
             command=lambda: self.show_frame(EmployeeListAll))
-        self.employee_list_btn.pack(fill="x", padx=20, pady=20)
+        self.employee_list_btn.grid(column=0, row=0, padx=20, pady=20)
 
         #button to payroll screen
-        self.payroll_btn = ttk.Button(
+        self.payrollBtn = ttk.Button(
             self.menu, 
             text="Payroll", 
-            command=lambda: self.show_frame(Payroll))
-        self.payroll_btn.pack(fill="x", padx=20, pady=20)
-
-        #button to payroll screen
-        self.detail_btn = ttk.Button(
-            self.menu, 
-            text="Detail test", 
             command=lambda: self.show_frame(EmployeeDetail))
-        self.detail_btn.pack(fill="x", padx=20, pady=20)
+        self.payrollBtn.grid(column=0, row=1, padx=20, pady=20)
+
+        # if self.admin == 0:
+        #     self.employee_list_btn.grid_remove()
+        #     self.payrollBtn.grid_remove()
 
         #main frame setup
         main_frame = tk.Frame(self)
@@ -70,7 +67,7 @@ class PayrollApp(tk.Tk):
         self.frames = {}
 
         #builds list of frames to switch between
-        for F in (LoginPage, EmployeeDetail, EmployeeListAll, Payroll, NewEmployee): ########################################
+        for F in (LoginPage, EmployeeDetail, EmployeeListAll, NewEmployee):
             frame = F(main_frame, self)
             self.frames[F] = frame
             frame.place(relx=0, rely=0, relwidth=1, relheight=1)
