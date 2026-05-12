@@ -60,7 +60,6 @@ class LoginPage(tk.Frame):
         if hashedPassword == storedPassword:
             messagebox.showinfo(title='Login Success', message='You Successfully logged in')
             self.controller.user = currentId
-            print("login" + str(self.controller.user))
             self.controller.admin = int(adminStatus)
 
             #check for admin status and redirect to appropriate page
