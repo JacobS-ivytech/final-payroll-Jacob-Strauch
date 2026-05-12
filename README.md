@@ -20,7 +20,7 @@ All the classes used to build each screen viewed in the main window are located 
 
 Some of the scripts used to build and prefill the database are located in the folder called databaseSetup.
 
-All of the supporting documents for this project including the project plan, blank test cases, completed test cases, <ins> **User Guide** </ins>, and UML documentation are located in the folder titled ***Supporting Documentation***.
+All of the supporting documents for this project including the project plan, blank test cases, completed test cases, <ins> [User Guide](./Supplemental_Information/User%20Guide.docx) </ins>, and UML documentation are located in the folder titled ***Supporting Documentation***.
 
 ## Login Credentials
 
