@@ -27,5 +27,7 @@ All of the supporting documents for this project including the project plan, bla
 These are 3 accounts that can be viewed to see the features available. The first item in the column should be entered in the email entry field and the second string after the dash should be entered into the password field.	
 
 Admin Account: HR0001 - 6r848Ple99ac
+
 Hourly associate: adamsmith@abc.com – 2000-01-01
+
 Salary associate: sierrstrauch@abc.com – 2008-05-07
