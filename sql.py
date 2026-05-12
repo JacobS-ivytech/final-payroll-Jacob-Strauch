@@ -2,6 +2,7 @@ import sqlite3
 import hashlib
 from Employee import Employee
 import datetime as dt
+from tkinter import messagebox
 
 #get passord for user from database
 def GetLoginData(email):
@@ -123,7 +124,10 @@ def PrefillWeekHours():
             hour = 0
 
         for i in range(7):
-            day = (id, current, hour, 0, 0)
+            if i == 0 or i == 6:
+                day = (id, current, 0, 0, 0)
+            else:
+                day = (id, current, hour, 0, 0)
             week.append(day)
             current = (dt.datetime.strptime(current, "%Y-%m-%d") + dt.timedelta(days=1)).strftime("%Y-%m-%d")
 
@@ -131,6 +135,8 @@ def PrefillWeekHours():
     
     connection.commit()
     connection.close()
+    
+    messagebox.showinfo(title="Success", message="Successfully loaded next week.")
 
 
 def GetHours(empId, endDate):
@@ -215,6 +221,35 @@ def UpdateHours(hoursPackage):
         [(hours, pto, empId, day)
          for empId, day, hours, pto in hoursPackage
     ])
+
+    connection.commit()
+    connection.close()
+
+def LockWeek(endDate, locked):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    #check state of week and switch locked status
+    switch = 0 if locked == 1 else 1
+
+    #find start of week
+    startDate = (dt.datetime.strptime(endDate, "%Y-%m-%d") - dt.timedelta(days=6)).strftime("%Y-%m-%d")
+
+    cursor.execute("""
+        UPDATE workhours
+        SET locked = ?
+        WHERE work_date BETWEEN ? AND ?
+        """,(switch, startDate, endDate))
+
+    connection.commit()
+    connection.close()
+
+def FullDeleteEmployee(empId):
+    connection = sqlite3.connect('ABC.db')
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM workhours WHERE employee_id = ?", (empId,))
+    cursor.execute("DELETE FROM employees WHERE id = ?", (empId,))
 
     connection.commit()
     connection.close()

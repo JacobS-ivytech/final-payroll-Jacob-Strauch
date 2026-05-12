@@ -1,27 +1,28 @@
 import datetime as dt
 from sql import GetHours, GetPayRate, GetDependents, GetDeductions
+from decimal import Decimal
 
 def CalculateGrossPay(empId, endDate):
     dbPayrate = GetPayRate(empId)[0]
     dbHours = GetHours(empId, endDate)
 
-    payRate = float(dbPayrate)
+    payRate = Decimal(dbPayrate)
 
     grossPay = 0
     for i in dbHours:
         empId, date, hoursDb, ptoDb, lock = i
         day = dt.datetime.strptime(date, "%Y-%m-%d").strftime("%a")
-        hours = float(hoursDb)
-        pto = float(ptoDb)
+        hours = Decimal(hoursDb)
+        pto = Decimal(ptoDb)
         if day == 'Sun' or day == 'Sat':
             #gives all day overtime pay for weekend work
-            grossPay += hours * payRate * 1.5
+            grossPay += hours * payRate * Decimal("1.5")
         else:
             #gives straight pay for all hours worked
             grossPay += (hours + pto) * payRate
-            if hours > 8:
+            if hours > Decimal("8"):
                 #gives extra 50% for overtime hours
-                grossPay += (hours - 8) * 0.5 * payRate
+                grossPay += (hours - Decimal("8")) * Decimal("0.5") * payRate
 
     return grossPay
 
@@ -36,7 +37,8 @@ def CalculateNetPay(empId, grossPay):
     stipend = dependents * 45
 
     #find pay before taxes
-    preTaxPay = grossPay - medical + stipend
+    
+    preTaxPay = Decimal(grossPay - medical + stipend)
 
     #get deductions from table
     deductionsText = GetDeductions()
@@ -44,7 +46,7 @@ def CalculateNetPay(empId, grossPay):
     #build dictionary with deductions as percentages
     deductions = {}
     for tax, value in deductionsText:
-        deductions[tax] = float(value) * .0001
+        deductions[tax] = Decimal(value) * Decimal(".0001")
 
     #find value of each deduction
     for tax in deductions:

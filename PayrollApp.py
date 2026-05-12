@@ -4,6 +4,7 @@ from screens.login import LoginPage
 from screens.employeeDetail import EmployeeDetail
 from screens.employeeList import EmployeeListAll
 from screens.newEmployee import NewEmployee
+from screens.payroll import Payroll
 
 #Global Variables
 primary_color = 'lightskyblue'
@@ -17,7 +18,7 @@ class PayrollApp(tk.Tk):
         self.title("ABC Company")
 
         #store current user and admin status identifier
-        self.currentUserId = None
+        self.user = None
         self.admin = 0
 
         #basic setup of window
@@ -45,19 +46,30 @@ class PayrollApp(tk.Tk):
         self.employee_list_btn = ttk.Button(
             self.menu, 
             text="Employee List", 
-            command=lambda: self.show_frame(EmployeeListAll))
+            command=lambda: self.show_frame("EmployeeListAll"))
         self.employee_list_btn.grid(column=0, row=0, padx=20, pady=20)
+
+        #button to employee detail screen
+        self.employeeDetailBtn = ttk.Button(
+            self.menu, 
+            text="Employee Pay Detail", 
+            command=lambda: self.show_frame("EmployeeDetail"))
+        self.employeeDetailBtn.grid(column=0, row=1, padx=20, pady=20)
 
         #button to payroll screen
         self.payrollBtn = ttk.Button(
             self.menu, 
             text="Payroll", 
-            command=lambda: self.show_frame(EmployeeDetail))
-        self.payrollBtn.grid(column=0, row=1, padx=20, pady=20)
+            command=lambda: self.show_frame("Payroll"))
+        self.payrollBtn.grid(column=0, row=3, padx=20, pady=20)
 
-        # if self.admin == 0:
-        #     self.employee_list_btn.grid_remove()
-        #     self.payrollBtn.grid_remove()
+        #label for version
+        tk.Label(self.menu, text="Version 1.0.0").grid(column=0, row=4, padx=40, pady=40, sticky="nsew")
+
+        if self.admin == 0:
+            self.employeeDetailBtn.grid_remove()
+            self.employee_list_btn.grid_remove()
+            self.payrollBtn.grid_remove()
 
         #main frame setup
         main_frame = tk.Frame(self)
@@ -67,17 +79,30 @@ class PayrollApp(tk.Tk):
         self.frames = {}
 
         #builds list of frames to switch between
-        for F in (LoginPage, EmployeeDetail, EmployeeListAll, NewEmployee):
+        for F in (LoginPage, EmployeeDetail, EmployeeListAll, NewEmployee, Payroll):
             frame = F(main_frame, self)
-            self.frames[F] = frame
+            self.frames[F.__name__] = frame
             frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-        self.show_frame(LoginPage)
+        self.show_frame("LoginPage")
 
     #pulls desired frame to the front of screen
     def show_frame(self, cont):
         frame = self.frames[cont]
+
+        #refreshes list when going to page
+        if cont == "EmployeeListAll":
+            frame.refreshTree()
+        elif cont == "EmployeeDetail":
+            frame.OnShow()
+            frame.RefreshEmpSelector()
+
         frame.tkraise()
 
+    def refreshMenu(self):
+        if self.admin == 1:
+            self.employeeDetailBtn.grid()
+            self.employee_list_btn.grid()
+            self.payrollBtn.grid()
 
 root = PayrollApp()
 root.mainloop()

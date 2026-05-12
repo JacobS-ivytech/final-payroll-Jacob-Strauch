@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from sql import GetAllEmployees
+from sql import GetAllEmployees, FullDeleteEmployee
 from screens.newEmployee import NewEmployee
 
 
@@ -19,13 +19,32 @@ class EmployeeListAll(tk.Frame):
         topBarFrame.grid_columnconfigure(1, weight=1)
         topBarFrame.grid_columnconfigure(2, weight=1)
 
+         #frame for employee selector group
+        empSelectorFrame = tk.Frame(topBarFrame)
+        empSelectorFrame.grid(column=0, row=0, sticky="w", padx=30)
+
+        #get list of names for selector
+        employees = GetAllEmployees()
+        self.employeeMap = {}
+        self.employeeDisplay = []
+        for i in employees:
+            display = f"{i.fname} {i.lname}"
+            self.employeeDisplay.append(display)
+            self.employeeMap[display] = i.id
+
+        #Selector for employee
+        self.empSelector = ttk.Combobox(empSelectorFrame, values=self.employeeDisplay, state="readonly")
+        self.empSelector.grid(column=0, row=0, sticky="w", padx=25)
+        self.empSelector.set("")
+        ttk.Button(empSelectorFrame, text="Delete Employee", command=lambda: self.DeleteEmployee()).grid(column=1, row=0)
+
         tk.Label(topBarFrame, text="Employee List All", font=("Arial", 20)).grid(column=1, row=0)
 
         #button to add new employee screen
         self.test_btn = ttk.Button(
             topBarFrame, 
             text="Add Employee", 
-            command=lambda: self.controller.show_frame(NewEmployee))
+            command=lambda: self.controller.show_frame("NewEmployee"))
         self.test_btn.grid(column=2, row=0, padx=20, pady=20, sticky="e")
 
         listFrame = tk.Frame(self)
@@ -58,6 +77,8 @@ class EmployeeListAll(tk.Frame):
                 self.tree.column(item, width = 120)
             elif item == "ID" or item == "Num. of Dependents" or item == "Admin Status":
                 self.tree.column(item, width=40)
+            elif item =="Title":
+                self.tree.column(item, width=60)
             else:
                 self.tree.column(item, width=40)
 
@@ -92,4 +113,20 @@ class EmployeeListAll(tk.Frame):
                 emp.admin
             ))
 
+    def DeleteEmployee(self):
+        #get employee from selector
+        selection = self.empSelector.get()
+        empId = self.employeeMap[selection]
+
+        #get confirmation before deleting
+        confirm = messagebox.askyesno(
+            title="Confirm Employee Delete",
+            message="Are you sure you want to delete this employee?\nThis action can not be undone.")
         
+        if not confirm:
+            return
+        
+        #delete employee from db
+        FullDeleteEmployee(empId)
+        messagebox.showinfo(title="Success", message="Employee successfully deleted")
+        self.refreshTree()

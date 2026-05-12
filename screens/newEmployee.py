@@ -216,5 +216,6 @@ class NewEmployee(tk.Frame):
                     value.set_date(date.today())
             
             self.controller.show_frame("EmployeeListAll")
+
         except Exception as e:
             messagebox.showerror(title="Database Error", message=str(e))

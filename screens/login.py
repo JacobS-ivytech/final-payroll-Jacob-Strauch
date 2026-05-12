@@ -59,13 +59,15 @@ class LoginPage(tk.Frame):
         #checks if passwords match
         if hashedPassword == storedPassword:
             messagebox.showinfo(title='Login Success', message='You Successfully logged in')
-            self.controller.currentUserID = currentId
-            self.controller.admin = adminStatus
+            self.controller.user = currentId
+            print("login" + str(self.controller.user))
+            self.controller.admin = int(adminStatus)
 
             #check for admin status and redirect to appropriate page
             if adminStatus == 1:
-                self.controller.show_frame(EmployeeListAll)
+                self.controller.show_frame("EmployeeListAll")
+                self.controller.refreshMenu()
             else:
-                self.controller.show_frame(EmployeeDetail)
+                self.controller.show_frame("EmployeeDetail")
         else:
             messagebox.showerror(title='Error', message='Wrong email or password')

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from sql import GetLastWeekDay, GetHours, GetSalary, UpdateHours, GetAllEmployees, PrefillWeekHours
+from sql import GetLastWeekDay, GetHours, GetSalary, UpdateHours, GetAllEmployees
 from reportCalculations import CalculateGrossPay, CalculateNetPay
 import datetime as dt
 
@@ -12,19 +12,7 @@ class EmployeeDetail(tk.Frame):
         super().__init__( parent)
         self.controller = controller
 
-        #get variable for specific user
-        self.user = self.controller.currentUserId
-        self.admin = self.controller.admin
-
-        #get latest week to start payroll page on
-        self.lastDayOfWeek = GetLastWeekDay()[0]
-
-        self.weeks = [self.lastDayOfWeek]
-        previousLastDay = self.lastDayOfWeek
-
-        for i in range(4):
-            previousLastDay = (dt.datetime.strptime(previousLastDay, "%Y-%m-%d") - dt.timedelta(days=7)).strftime("%Y-%m-%d")
-            self.weeks.append(previousLastDay)
+        self.user = self.controller.user
 
         #frame for top banner of page
         topBarFrame = tk.Frame(self)
@@ -34,19 +22,15 @@ class EmployeeDetail(tk.Frame):
             topBarFrame.grid_columnconfigure(i, weight=1)
 
         #frame for week selector group
-        weekSelectorFrame = tk.Frame(topBarFrame)
-        weekSelectorFrame.grid(column=0, row=0, sticky="w", padx=10)
+        self.weekSelectorFrame = tk.Frame(topBarFrame)
+        self.weekSelectorFrame.grid(column=0, row=0, sticky="w", padx=10)
 
-         #Selector for week
-        tk.Label(weekSelectorFrame, text="Week Ending on:").grid(column=0, row=0, padx=15, pady=15, sticky="w")
-        self.weekSelector = ttk.Combobox(weekSelectorFrame, values=self.weeks, state="readonly")
-        self.weekSelector.grid(column=1, row=0, sticky="w")
-        self.weekSelector.set(self.lastDayOfWeek)
-        ttk.Button(weekSelectorFrame, text="Select Week", command=lambda: self.LoadWeek()).grid(column=0, row=1, columnspan=2)
-        
+        #resets choices for week
+        self.ResetSelector()
+
         #frame for employee selector group
-        empSelectorFrame = tk.Frame(topBarFrame)
-        empSelectorFrame.grid(column=1, row=0, sticky="w", padx=30)
+        self.empSelectorFrame = tk.Frame(topBarFrame)
+        self.empSelectorFrame.grid(column=1, row=0, sticky="w", padx=30)
 
         #get list of names for selector
         employees = GetAllEmployees()
@@ -58,34 +42,18 @@ class EmployeeDetail(tk.Frame):
             self.employeeMap[display] = i.id
 
         #Selector for employee
-        tk.Label(empSelectorFrame, text="Employee to view:").grid(column=0, row=0, padx=15, pady=15, sticky="w")
-        self.empSelector = ttk.Combobox(empSelectorFrame, values=self.employeeDisplay, state="readonly")
+        tk.Label(self.empSelectorFrame, text="Employee to view:").grid(column=0, row=0, padx=15, pady=15, sticky="w")
+        self.empSelector = ttk.Combobox(self.empSelectorFrame, values=self.employeeDisplay, state="readonly")
         self.empSelector.grid(column=1, row=0, sticky="w")
         self.empSelector.set(self.employeeDisplay[0])
-        ttk.Button(empSelectorFrame, text="Select Employee", command=lambda: self.LoadEmployee()).grid(column=0, row=1, columnspan=2)
-        
-        #hides selector for nonadmin
-        if self.admin == 0:
-            empSelectorFrame.grid_remove()
+        ttk.Button(self.empSelectorFrame, text="Select Employee", command=lambda: self.LoadEmployee()).grid(column=0, row=1, columnspan=2)
+
+        #hide employee selector for nonadmin
+        if self.controller.admin == 0:
+            self.empSelectorFrame.grid_remove()
 
         #Title of page
         tk.Label(topBarFrame, text="Employee Detail", font=("Arial", 20)).grid(column=2, row=0)
-
-        #Frame for admin buttons
-        adminBtnFrame = tk.Frame(topBarFrame)
-        adminBtnFrame.grid(column=3, row=0)
-
-        #button to lock week from edits
-        lockBtn = ttk.Button(adminBtnFrame, text="Lock/Unlock Week", command=lambda: self.lockWeek)
-        lockBtn.grid(column=0, row=0, pady=10)
-
-        #button to load next week into system
-        newWeekBtn = ttk.Button(adminBtnFrame, text="Build Next Week", command=lambda: PrefillWeekHours())
-        newWeekBtn.grid(column=0, row=1)
-
-        #hide buttons from non admin
-        if self.admin == 0:
-            adminBtnFrame.grid_remove()
 
         #Save Changes button
         saveBtn = ttk.Button(topBarFrame, text="Save and Calculate", command=lambda: self.CalculatePay())
@@ -96,17 +64,22 @@ class EmployeeDetail(tk.Frame):
         self.hourFrame.pack(fill="both")
 
         #format columns
-        self.hourFrame.grid_columnconfigure(0, weight=1)
-        self.hourFrame.grid_columnconfigure(1, weight=1)
-        self.hourFrame.grid_columnconfigure(2, weight=1)
-        self.hourFrame.grid_columnconfigure(3, weight=1)
-        self.hourFrame.grid_columnconfigure(4, weight=1)
-        self.hourFrame.grid_columnconfigure(5, weight=1)
-        self.hourFrame.grid_columnconfigure(6, weight=1)
-        self.hourFrame.grid_columnconfigure(7, weight=1)
+        for i in range(8):
+            self.hourFrame.grid_columnconfigure(i, weight=1)
+            
+
+        #create separate frames for data and labels
+        self.dataFrame = tk.Frame(self.hourFrame)
+        self.dataFrame.grid(row=1, column=1, columnspan=7, sticky="nsew", rowspan=3)
+
+        #format columns and rows
+        for i in range(7):
+            self.dataFrame.grid_columnconfigure(i, weight=1)
+        for i in range(3):
+            self.dataFrame.grid_rowconfigure(i, weight=1)
 
         #labels for each day of week
-        tk.Label(self.hourFrame, text="Sunday", font=("Arial", 18)).grid(column=1, row=0, pady=25)
+        tk.Label(self.hourFrame, text="Sunday", font=("Arial", 18)).grid(column=1, row=0)
         tk.Label(self.hourFrame, text="Monday", font=("Arial", 18)).grid(column=2, row=0)
         tk.Label(self.hourFrame, text="Tuesday", font=("Arial", 18)).grid(column=3, row=0)
         tk.Label(self.hourFrame, text="Wednesday", font=("Arial", 18)).grid(column=4, row=0)
@@ -115,9 +88,9 @@ class EmployeeDetail(tk.Frame):
         tk.Label(self.hourFrame, text="Saturday", font=("Arial", 18)).grid(column=7, row=0)
 
         #row Labels
-        tk.Label(self.hourFrame, text="Date", font=("Arial", 18)).grid(column=0, row=1, pady=20)
-        tk.Label(self.hourFrame, text="Hours", font=("Arial", 18)).grid(column=0, row=2, pady=20)
-        tk.Label(self.hourFrame, text="PTO", font=("Arial", 18)).grid(column=0, row=3, pady=20)
+        tk.Label(self.hourFrame, text="Date", font=("Arial", 18)).grid(column=0, row=1, pady=10)
+        tk.Label(self.hourFrame, text="Hours", font=("Arial", 18)).grid(column=0, row=2, pady=10)
+        tk.Label(self.hourFrame, text="PTO", font=("Arial", 18)).grid(column=0, row=3, pady=10)
 
         #load with most recent week hours
         self.LoadWeek()
@@ -148,14 +121,46 @@ class EmployeeDetail(tk.Frame):
         self.netPayLabel = tk.Label(self.grossPayFrame, text="-", font=("Arial", 18), bg="white")
         self.netPayLabel.grid(column=1, row=1)
 
+    def RefreshEmpSelector(self):
+        #hide employee selector for nonadmin
+        if self.controller.admin == 1:
+            self.empSelectorFrame.grid()
 
+    def ResetSelector(self):
+
+        # clear old widgets
+        for widget in self.weekSelectorFrame.winfo_children():
+            widget.destroy()
+
+        #get latest week to start payroll page on
+        self.lastDayOfWeek = GetLastWeekDay()[0]
+
+        self.weeks = [self.lastDayOfWeek]
+        previousLastDay = self.lastDayOfWeek
+
+        for i in range(4):
+            previousLastDay = (dt.datetime.strptime(previousLastDay, "%Y-%m-%d") - dt.timedelta(days=7)).strftime("%Y-%m-%d")
+            self.weeks.append(previousLastDay)
+            
+        #Selector for week
+        tk.Label(self.weekSelectorFrame, text="Week Ending on:").grid(column=0, row=0, padx=15, pady=15, sticky="w")
+        self.weekSelector = ttk.Combobox(self.weekSelectorFrame, values=self.weeks, state="readonly")
+        self.weekSelector.grid(column=1, row=0, sticky="w")
+        self.weekSelector.set(self.lastDayOfWeek)
+        ttk.Button(self.weekSelectorFrame, text="Select Week", command=lambda: self.LoadWeek()).grid(column=0, row=1, columnspan=2)
+        
 
     def LoadWeek(self):
 
-        result = GetHours(2, self.weekSelector.get()) ######################Change to SELF.USER
-        salary = GetSalary(2)###############################################
+        # clear old widgets
+        for widget in self.dataFrame.winfo_children():
+            widget.destroy()
 
-        workingCol = 1
+        print("load" + str(self.user))
+        result = GetHours(self.user, self.weekSelector.get())
+        salary = GetSalary(self.user)
+
+        workingCol = 0
 
         #store entries for calculations later
         self.hours_entries = {}
@@ -164,17 +169,17 @@ class EmployeeDetail(tk.Frame):
             empId, day, hours, pto, lock = item
 
             #date for day of week
-            tk.Label(self.hourFrame, text=day, font=("Arial", 16)).grid(column=workingCol, row=1)
+            tk.Label(self.dataFrame, text=day, font=("Arial", 16)).grid(column=workingCol, row=1, pady=10)
 
             #hours for date
-            hours_entry = tk.Entry(self.hourFrame, font=("Arial", 16), width=6, justify="right")
+            hours_entry = tk.Entry(self.dataFrame, font=("Arial", 16), width=6, justify="right")
             hours_entry.insert(0, hours)
-            hours_entry.grid(column=workingCol, row=2)
+            hours_entry.grid(column=workingCol, row=2, pady=10)
 
             #pto for date
-            pto_entry = tk.Entry(self.hourFrame, font=("Arial", 16), width=6, justify="right")
+            pto_entry = tk.Entry(self.dataFrame, font=("Arial", 16), width=6, justify="right")
             pto_entry.insert(0, pto)
-            pto_entry.grid(column=workingCol, row=3)
+            pto_entry.grid(column=workingCol, row=3, pady=10)
 
             #check if locked
             if lock == 1:
@@ -197,7 +202,7 @@ class EmployeeDetail(tk.Frame):
 
     def CalculatePay(self):
         self.GatherHours()
-        grossPay = CalculateGrossPay(2, self.weekSelector.get())#######################
+        grossPay = CalculateGrossPay(self.user, self.weekSelector.get())
 
         self.grossPayLabel.config(text=f"${grossPay:.2f}")
 
@@ -205,7 +210,7 @@ class EmployeeDetail(tk.Frame):
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        netPay, deductions = CalculateNetPay(2, grossPay)###############################4
+        netPay, deductions = CalculateNetPay(self.user, grossPay)
 
         #insert deductions into tree
         for tax in deductions:
@@ -244,3 +249,10 @@ class EmployeeDetail(tk.Frame):
             hoursPackage.append((int(self.user), day, hours, pto))
 
         UpdateHours(hoursPackage)
+
+    def OnShow(self):
+        self.user = self.controller.user
+        self.ResetSelector()
+        self.LoadWeek()
+        if self.controller.admin == 1:
+            self.LoadEmployee()
