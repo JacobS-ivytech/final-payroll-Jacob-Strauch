@@ -156,7 +156,6 @@ class EmployeeDetail(tk.Frame):
         for widget in self.dataFrame.winfo_children():
             widget.destroy()
 
-        print("load" + str(self.user))
         result = GetHours(self.user, self.weekSelector.get())
         salary = GetSalary(self.user)
 
